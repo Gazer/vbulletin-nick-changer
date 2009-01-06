@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<product productid="punch_o_matic" active="1">
+	<title>Nick Changer</title>
+	<description>Allow normal users change his username over a time period</description>
+	<version>0.1</version>
+	<url></url>
+	<versioncheckurl></versioncheckurl>
+	<dependencies>
+	</dependencies>
+	<codes>
+		<code version="0.1">
+		  <installcode><![CDATA[$db->hide_errors();
+
+      # Log for all the usernames changes
+      $vbulletin->db->query_write("CREATE TABLE IF NOT EXISTS `". TABLE_PREFIX ."nick_changer_usernames` (
+          `id` INT(10) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+          `userid` INT(10) NOT NULL,
+          `username` VARCHAR(50) NOT NULL,
+          `dateline` INT(10) NOT NULL)
+          ");
+      $vbulletin->db->query_write("ALTER TABLE `". TABLE_PREFIX ."nick_changer_usernames` ADD INDEX ( `userid` )");
+
+      $vbulletin->db->query_write("ALTER TABLE `". TABLE_PREFIX ."user` ADD `nick_changer_last_change` INT( 10 ) UNSIGNED DEFAULT '0' NOT NULL");
+
+      $db->show_errors();]]>
+      </installcode>
+      <uninstallcode><![CDATA[$db->hide_errors();
+
+      $vbulletin->db->query_write("DROP TABLE IF EXISTS " . TABLE_PREFIX . "nick_changer_usernames");
+      $vbulletin->db->query_write("ALTER TABLE " . TABLE_PREFIX . "user DROP COLUMN `nick_changer_last_change`");
+
+      $db->show_errors();]]>
+      </uninstallcode>
+    </code>
+  </codes>
+  <templates>
+		<template name="nick_changer_javascript" templatetype="template" version="0.1"><![CDATA[
+		  <script type="text/javascript" src="clientscript/nick_changer.js"></script>
+		  ]]>
+		</template>
+  	<template name="nick_changer_usernamebit" templatetype="template" date="" username="" version="0.1"><![CDATA[
+  	  <span>$username</span> |
+  	  ]]>
+  	</template>
+	  <template name="nick_changer_last_usernames" templatetype="template" date="" username="" version="0.1"><![CDATA[
+      <!-- usernames row -->
+      <table class="tborder" cellpadding="$stylevar[cellpadding]" cellspacing="$stylevar[cellspacing]" border="0" width="100%" align="center">
+      <tr>
+      	<td class="thead">$vbphrase[nick_changer_last_usernames]</td>
+      </tr>
+      <tr>
+      	<td class="panelsurround" title="$vbphrase[nick_changer_last_usernames]">
+      	  <div class="panel" align="center">
+    	      | $usernames
+    	    </div>
+      	</td>
+      </tr>
+      </table>
+      <!-- / usernames row -->
+      <br />
+      ]]>
+    </template>
+  	<template name="nick_changer_form" templatetype="template" date="0" username="" version="0.1"><![CDATA[
+      <form action="nick_changer.php?do=dochance_username" method="post" name="vbform">
+      <table class="tborder" cellpadding="$stylevar[cellpadding]" cellspacing="$stylevar[cellspacing]" border="0" width="100%" align="center">
+      <tr>
+      	<td class="tcat">$vbphrase[username]</td>
+      </tr>
+      <tr>
+      	<td class="panelsurround" align="center">
+      	<div class="panel">
+      	  $vbphrase[nick_changer_username_desc]
+      	</div>
+      	<div class="panel">
+      	  $vbphrase[nick_changer_username] : 
+      		<input type="text" name="username" value="$url" onblur="nick_changer_check_availability(this.value);" />
+      		<img id="nick_changer_spinner" alt="Spinner" src="/images/nick_changer_spinner.gif" style="display:none;" />
+      		<br />
+      	</div>
+
+    		<div class="panel" id="nick_changer_available">
+    		</div>
+
+      	<div class="panel">
+      	  <input type="checkbox" name="username_confirmation" id="username_confirmation" value="1" />
+      	  <label for="username_confirmation">$vbphrase[nick_changer_username_confirmation]</label>
+      	</div>
+
+  			<input type="submit" class="button" value="$vbphrase[save]" accesskey="s" tabindex="1" />
+      	</td>
+      </tr>
+      </table>
+      </form>
+      ]]>
+    </template>
+  	<template name="nick_changer_no_permission" templatetype="template" date="0" username="" version="0.1"><![CDATA[
+        <table class="tborder" cellpadding="$stylevar[cellpadding]" cellspacing="$stylevar[cellspacing]" border="0" width="100%" align="center">
+        <tr>
+        	<td class="tcat">$vbphrase[nick_changer_username]</td>
+        </tr>
+        <tr>
+        	<td class="panelsurround" align="center">
+          	<div class="panel">
+          	  $vbphrase[nick_changer_no_permission]
+          	</div>
+          	
+          	<div class="panel">
+          	  $days
+          	</div>
+        	</td>
+        </tr>
+        </table>
+        </form>
+      ]]>
+    </template>
+    <template name="nick_changer_usercp" templatetype="template" date="0" username="" version="0.1"><![CDATA[
+      <tr>
+      	<td class="$navclass[attachments]" nowrap="nowrap"><a class="smallfont" href="nick_changer.php?$session[sessionurl]">$vbphrase[nick_changer_change_username]</a></td>
+      </tr>
+      ]]>
+    </template>
+    <template name="nick_changer_usernote" templatetype="template" date="0" username="" version="0.1">
+      <![CDATA[[b]$vbphrase[nick_changer_usernote_text][/b] $old_username]]>
+    </template>
+  </templates>
+  <plugins>
+    <plugin active="1" executionorder="5">
+      <title><![CDATA[Set nick_changer_last_change as valid field to users]]></title>
+      <hookname>userdata_start</hookname>
+      <phpcode><![CDATA[$this->validfields['nick_changer_last_change'] = array(TYPE_UINT, REQ_NO);]]></phpcode>
+    </plugin>
+    <plugin active="1" executionorder="5">
+      <title>Add navbit for User options panel</title>
+      <hookname>usercp_nav_start</hookname>
+      <phpcode><![CDATA[
+        $cells[] = 'nick_changer';
+        ]]>
+      </phpcode>
+    </plugin>
+    <plugin active="1" executionorder="5">
+      <title>Add navbit for User options panel</title>
+      <hookname>usercp_complete</hookname>
+      <phpcode><![CDATA[
+        $navbits['nick_changer.php?' . $vbulletin->session->vars['sessionurl']] = $vbphrase['nick_changer_change_username'];
+        eval('$template_hook["usercp_navbar_bottom"] .= " ' . fetch_template('nick_changer_usercp') . '";');
+        ]]>
+      </phpcode>
+    </plugin>
+    <plugin active="1" executionorder="5">
+      <title>Fetch data for profile</title>
+      <hookname>member_start</hookname>
+      <phpcode><![CDATA[
+        require(DIR . '/includes/functions_nick_changer.php');
+        $last_usernames = fetch_usernames_for_user($vbulletin->GPC['userid']);
+        ]]>
+      </phpcode>
+    </plugin>
+    <plugin active="1" executionorder="5">
+      <title>Show old usernames</title>
+      <hookname>member_complete</hookname>
+      <phpcode><![CDATA[
+        $usernames = '';
+        if (count($last_usernames) > 0) {
+          foreach($last_usernames as $username) {
+            $username = htmlspecialchars_uni($username);
+            eval('$usernames .= " ' . fetch_template('nick_changer_usernamebit') . '";');
+          }
+        } else {
+          $username = $vbphrase[nick_changer_no_usernames];
+          eval('$usernames .= " ' . fetch_template('nick_changer_usernamebit') . '";');
+        }
+        eval('$template_hook[memberinfo_pos2] .= " ' . fetch_template('nick_changer_last_usernames') . '";');
+        ]]>
+      </phpcode>
+    </plugin>
+    <plugin active="1" executionorder="5">
+      <title>Template caches</title>
+    	<hookname>cache_templates</hookname>
+    	<phpcode><![CDATA[
+        if (THIS_SCRIPT === member)
+        {
+      	  $globaltemplates = array_merge($globaltemplates, array(
+      		  'nick_changer_last_usernames',
+      		  'nick_changer_usernamebit',
+      	  ));
+        }
+        ]]>
+      </phpcode>
+    </plugin>
+		<plugin active="1" executionorder="5">
+			<title>Include Javascript files in member profile</title>
+			<hookname>profile_complete</hookname>
+			<phpcode><![CDATA[
+			  if (THIS_SCRIPT === nick_changer) {
+			    eval('$headinclude .= "' . fetch_template('nick_changer_javascript') . '";');
+			  }
+			  ]]>
+			</phpcode>
+		</plugin>
+  </plugins>
+	<phrases>
+		<phrasetype name="vBulletin Settings" fieldname="vbsettings">
+		  <!-- Frases de las opciones del admincp -->
+		  <phrase name="settinggroup_nick_changer" date="0" username="" version="">
+		    <![CDATA[3DG - Nick Changer]]>
+		  </phrase>
+		  <phrase name="setting_nick_changer_on_off_desc" date="1194767284" username="" version="0.1">
+		    <![CDATA[Turns the entire Nick Changer system on or off. Do you want Nick Changer enabled?]]>
+		  </phrase>
+			<phrase name="setting_nick_changer_on_off_title" date="1194767284" username="" version="0.1">
+			  <![CDATA[Nick Changer Enabled]]>
+			</phrase>
+		  <phrase name="setting_nick_changer_days_desc" date="1194767284" username="" version="0.1">
+		    <![CDATA[Insert how often the users can change his username, in days]]>
+		  </phrase>
+			<phrase name="setting_nick_changer_days_title" date="1194767284" username="" version="0.1">
+			  <![CDATA[Days between username change]]>
+			</phrase>
+		  <phrase name="setting_nick_changer_usernote_title_desc" date="1194767284" username="" version="0.1">
+		    <![CDATA[Set the text to show as title in the usernote]]>
+		  </phrase>
+			<phrase name="setting_nick_changer_usernote_title_title" date="1194767284" username="" version="0.1">
+			  <![CDATA[Usernote Title]]>
+			</phrase>
+		  <phrase name="setting_nick_changer_usernote_posterid_desc" date="1194767284" username="" version="0.1">
+		    <![CDATA[Set the UserID that you want yo use to post the usernote.]]>
+		  </phrase>
+			<phrase name="setting_nick_changer_usernote_posterid_title" date="1194767284" username="" version="0.1">
+			  <![CDATA[User ID to use has poster in the Usernote]]>
+			</phrase>
+		</phrasetype>
+		<phrasetype name="GLOBAL" fieldname="global">
+			<phrase name="nick_changer_change_username" date="0" username="" version="0.1">
+			  <![CDATA[Change Username]]>
+			</phrase>
+			<phrase name="nick_changer_username" date="0" username="" version="0.1">
+			  <![CDATA[New Username]]>
+			</phrase>
+			<phrase name="nick_changer_username_confirmation" date="0" username="" version="0.1">
+			  <![CDATA[Yes, I want to change my username]]>
+			</phrase>
+			<phrase name="nick_changer_usernote_text" date="0" username="" version="0.1">
+			  <![CDATA[Preview Username : ]]>
+			</phrase>
+			<phrase name="nick_changer_username_desc" date="0" username="" version="0.1">
+			  <![CDATA[Select your new username. Be aware that this action is permanent for the next period and can't be reverted until the time to change the username again expire.]]>
+			</phrase>
+			<phrase name="nick_changer_no_usernames" date="0" username="" version="0.1">
+			  <![CDATA[This user never has changed his username]]>
+			</phrase>
+			<phrase name="nick_changer_last_usernames" date="0" username="" version="0.1">
+			  <![CDATA[Others usernames used by this user :]]>
+			</phrase>
+      <phrase name="nick_changer_no_permission" date="0" username="" version="0.1">
+			  <![CDATA[You can't change your username right now.]]>
+			</phrase>
+      <phrase name="nick_changer_no_permission_days" date="0" username="" version="0.1">
+			  <![CDATA[You have to wait {1} days more to change your nick again.]]>
+			</phrase>
+		</phrasetype>
+    <phrasetype name="Error Messages" fieldname="error">
+		  <!-- Frases que se usan en los redirect -->
+			<phrase name="nick_changer_not_confirmed" date="0" username="" version="">
+			  <![CDATA[You must check "{1}".]]>
+			</phrase>
+			<phrase name="nick_changer_change_done" date="0" username="" version="">
+			  <![CDATA[Yours username was successfully changed to {1} ... <a href="usercp.php">continue</a>]]>
+			</phrase>
+			<phrase name="nick_changer_errors" date="0" username="" version="">
+			  <![CDATA[An error was ocurred trying to change your usename to {1} : {2}]]>
+			</phrase>
+			<phrase name="nick_changer_not_changed" date="0" username="" version="">
+			  <![CDATA[The username {1} is already taked. Please go back and choose another.]]>
+			</phrase>
+			<phrase name="nick_changer_not_changed" date="0" username="" version="">
+			  <![CDATA[You are the owner of the username {1} right now.]]>
+			</phrase>
+		</phrasetype>
+  </phrases>
+	<options>
+		<settinggroup name="nick_changer" displayorder="7894">
+			<setting varname="nick_changer_on_off" displayorder="10">
+				<datatype>boolean</datatype>
+				<optioncode>yesno</optioncode>
+				<defaultvalue>1</defaultvalue>
+			</setting>
+			<setting varname="nick_changer_days" displayorder="20">
+				<datatype>number</datatype>
+				<defaultvalue>0</defaultvalue>
+			</setting>
+			<setting varname="nick_changer_usernote_title" displayorder="30">
+				<datatype>free</datatype>
+				<defaultvalue>Nick Chanced</defaultvalue>
+			</setting>
+			<setting varname="nick_changer_usernote_posterid" displayorder="50">
+				<datatype>free</datatype>
+				<defaultvalue>0</defaultvalue>
+			</setting>
+		</settinggroup>
+	</options>
+	<helptopics>
+	</helptopics>
+	<cronentries>
+	</cronentries>
+	<faqentries>
+	</faqentries>
+</product>

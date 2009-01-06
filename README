@@ -1,0 +1,8 @@
+
+Edit the USERCP_SHELL template and add :
+<tr>
+	<td class="$navclass[attachments]" nowrap="nowrap"><a class="smallfont" href="nick_changer.php?$session[sessionurl]">$vbphrase[nick_changer_change_username]</a></td>
+</tr>
+
+After :
+<if condition="$show['siglink']">

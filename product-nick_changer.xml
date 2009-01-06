@@ -114,14 +114,20 @@
         </form>
       ]]>
     </template>
-    <template name="nick_changer_usercp" templatetype="template" date="0" username="" version="0.1"><![CDATA[
-      <tr>
-      	<td class="$navclass[attachments]" nowrap="nowrap"><a class="smallfont" href="nick_changer.php?$session[sessionurl]">$vbphrase[nick_changer_change_username]</a></td>
-      </tr>
-      ]]>
-    </template>
     <template name="nick_changer_usernote" templatetype="template" date="0" username="" version="0.1">
       <![CDATA[[b]$vbphrase[nick_changer_usernote_text][/b] $old_username]]>
+    </template>
+    <template name="nick_changer_check_error" templatetype="template" date="0" username="" version="0.1">
+      <![CDATA[
+	    <img src='images/nick_changer_error.gif' align='bottom' />
+	    <span style='font-size: 16px; line-height: 16px;'>Already registered</span>
+      ]]>
+    </template>
+    <template name="nick_changer_check_ok" templatetype="template" date="0" username="" version="0.1">
+      <![CDATA[
+      <img src='images/nick_changer_ok.gif' align='bottom' />
+      <span style='font-size: 16px; line-height: 16px;'>Username available</span>
+      ]]>
     </template>
   </templates>
   <plugins>
@@ -135,15 +141,6 @@
       <hookname>usercp_nav_start</hookname>
       <phpcode><![CDATA[
         $cells[] = 'nick_changer';
-        ]]>
-      </phpcode>
-    </plugin>
-    <plugin active="1" executionorder="5">
-      <title>Add navbit for User options panel</title>
-      <hookname>usercp_complete</hookname>
-      <phpcode><![CDATA[
-        $navbits['nick_changer.php?' . $vbulletin->session->vars['sessionurl']] = $vbphrase['nick_changer_change_username'];
-        eval('$template_hook["usercp_navbar_bottom"] .= " ' . fetch_template('nick_changer_usercp') . '";');
         ]]>
       </phpcode>
     </plugin>
@@ -283,7 +280,7 @@
 			<setting varname="nick_changer_on_off" displayorder="10">
 				<datatype>boolean</datatype>
 				<optioncode>yesno</optioncode>
-				<defaultvalue>1</defaultvalue>
+				<defaultvalue>0</defaultvalue>
 			</setting>
 			<setting varname="nick_changer_days" displayorder="20">
 				<datatype>number</datatype>
@@ -291,7 +288,7 @@
 			</setting>
 			<setting varname="nick_changer_usernote_title" displayorder="30">
 				<datatype>free</datatype>
-				<defaultvalue>Nick Chanced</defaultvalue>
+				<defaultvalue>Nick Changed</defaultvalue>
 			</setting>
 			<setting varname="nick_changer_usernote_posterid" displayorder="50">
 				<datatype>free</datatype>

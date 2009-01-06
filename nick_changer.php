@@ -13,7 +13,7 @@ define('THIS_SCRIPT', 'nick_changer');
 
 // ################### PRE-CACHE TEMPLATES AND DATA ######################
 // get special phrase groups
-$phrasegroups = array();
+$phrasegroups = array('user', 'timezone', 'posting', 'cprofilefield', 'cppermission');
 
 // get special data templates from the datastore
 $specialtemplates = array();
@@ -56,16 +56,19 @@ if (!isset($_REQUEST['do'])) {
 }
 
 if ($_REQUEST['do'] == 'checkavailability') {
-  $result = $db->query_first("SELECT count(1) as total FROM " . TABLE_PREFIX . "user WHERE username = '" . $db->escape_string($username). "';");
+  $result = $db->query_first("SELECT count(1) as total FROM " . TABLE_PREFIX . "user WHERE LOWER(username) = '" . $db->escape_string(strtolower($username)). "';");
 
   $exists = ($result['total'] > 0) ? true : false;
 
 	if ($using_ajax)
 	{
-	  if ($exists)
-	    echo "Already registered";
-	  else
-	    echo "Username available";
+	  if ($exists) {
+	    $template = 'nick_changer_check_error';
+	  } else {
+	    $template = 'nick_changer_check_ok';
+    }
+    eval('$echo = "' . fetch_template($template) . '";');
+    echo $echo;
 		exit;
 	}	else {
 	  # Redirect back to the post
@@ -86,8 +89,12 @@ if ($_REQUEST['do'] == 'checkavailability') {
   if (nick_changer_can_change_username($vbulletin->userinfo)) {
     eval('$HTML = "' . fetch_template('nick_changer_form') . '";');
   } else {
-    $days = ceil(($vbulletin->options['nick_changer_days']*86400 - (TIMENOW - $vbulletin->userinfo['nick_changer_last_change']))/86400);
-    $days = construct_phrase($vbphrase['nick_changer_no_permission_days'], $days);
+    if ($vbulletin->options['nick_changer_on_off'] == 1) {
+      $days = ceil(($vbulletin->options['nick_changer_days']*86400 - (TIMENOW - $vbulletin->userinfo['nick_changer_last_change']))/86400);
+      $days = construct_phrase($vbphrase['nick_changer_no_permission_days'], $days);
+    } else {
+      $days = "";
+    }
     eval('$HTML = "' . fetch_template('nick_changer_no_permission') . '";');
   }
   eval('print_output("' . fetch_template($shelltemplatename) . '");');

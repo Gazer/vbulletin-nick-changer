@@ -1,3 +1,9 @@
+/*=====================================*\
+|| ################################### ||
+|| # Nick Changer        version 0.1 # ||
+|| ################################### ||
+\*=====================================*/
+
 function nick_changer_check_availability(username)
 {
 	do_nick_change = new vB_AJAX_Handler(true);

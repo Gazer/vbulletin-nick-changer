@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
 <product productid="punch_o_matic" active="1">
-	<title>Nick Changer</title>
+	<title>3DG - Nick Changer</title>
 	<description>Allow normal users change his username over a time period</description>
 	<version>0.1</version>
-	<url></url>
+	<url>http://foros.3dgames.com.ar/</url>
 	<versioncheckurl></versioncheckurl>
 	<dependencies>
 	</dependencies>
@@ -238,13 +238,13 @@
 			  <![CDATA[Yes, I want to change my username]]>
 			</phrase>
 			<phrase name="nick_changer_usernote_text" date="0" username="" version="0.1">
-			  <![CDATA[Preview Username : ]]>
+			  <![CDATA[Previous Username : ]]>
 			</phrase>
 			<phrase name="nick_changer_username_desc" date="0" username="" version="0.1">
-			  <![CDATA[Select your new username. Be aware that this action is permanent for the next period and can't be reverted until the time to change the username again expire.]]>
+			  <![CDATA[Select your new username. This action is permanent for the next period and can't be reverted until the time to change the username again expire.]]>
 			</phrase>
 			<phrase name="nick_changer_no_usernames" date="0" username="" version="0.1">
-			  <![CDATA[This user never has changed his username]]>
+			  <![CDATA[This user has never change his username]]>
 			</phrase>
 			<phrase name="nick_changer_last_usernames" date="0" username="" version="0.1">
 			  <![CDATA[Others usernames used by this user :]]>
@@ -258,20 +258,26 @@
 		</phrasetype>
     <phrasetype name="Error Messages" fieldname="error">
 		  <!-- Frases que se usan en los redirect -->
-			<phrase name="nick_changer_not_confirmed" date="0" username="" version="">
+			<phrase name="nick_changer_not_confirmed" date="0" username="" version="0.1">
 			  <![CDATA[You must check "{1}".]]>
 			</phrase>
-			<phrase name="nick_changer_change_done" date="0" username="" version="">
+			<phrase name="nick_changer_change_done" date="0" username="" version="0.1">
 			  <![CDATA[Yours username was successfully changed to {1} ... <a href="usercp.php">continue</a>]]>
 			</phrase>
-			<phrase name="nick_changer_errors" date="0" username="" version="">
+			<phrase name="nick_changer_errors" date="0" username="" version="0.1">
 			  <![CDATA[An error was ocurred trying to change your usename to {1} : {2}]]>
 			</phrase>
 			<phrase name="nick_changer_not_changed" date="0" username="" version="">
 			  <![CDATA[The username {1} is already taked. Please go back and choose another.]]>
 			</phrase>
-			<phrase name="nick_changer_not_changed" date="0" username="" version="">
+			<phrase name="nick_changer_not_changed" date="0" username="" version="0.1">
 			  <![CDATA[You are the owner of the username {1} right now.]]>
+			</phrase>
+		</phrasetype>
+		<phrasetype name="Front-End Redirect Messages" fieldname="frontredirect">
+		  <!-- Frases que se usan en los redirect -->
+			<phrase name="punch_o_matic" date="0" username="" version="0.1">
+			  <![CDATA[The username is not available.]]>
 			</phrase>
 		</phrasetype>
   </phrases>

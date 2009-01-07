@@ -56,7 +56,7 @@ if (!isset($_REQUEST['do'])) {
 }
 
 if ($_REQUEST['do'] == 'checkavailability') {
-  $result = $db->query_first("SELECT count(1) as total FROM " . TABLE_PREFIX . "user WHERE LOWER(username) = '" . $db->escape_string(strtolower($username)). "';");
+  $result = $db->query_first("SELECT count(1) as total FROM " . TABLE_PREFIX . "user WHERE LOWER(username) = '" . $db->escape_string(strtolower($username)). "' AND userid != " . $vbulletin->userinfo['userid']. ";");
 
   $exists = ($result['total'] > 0) ? true : false;
 
@@ -75,7 +75,9 @@ if ($_REQUEST['do'] == 'checkavailability') {
 		$vbulletin->url = "nick_changer.php";
 		eval(print_standard_redirect('redirect_nick_changer_already_registered'));
 	}
-} else if ($_REQUEST['do'] == 'chance_username') {
+}
+
+if ($_REQUEST['do'] == 'chance_username') {
   // draw cp nav bar
   construct_usercp_nav('nick_changer');
 
@@ -98,7 +100,9 @@ if ($_REQUEST['do'] == 'checkavailability') {
     eval('$HTML = "' . fetch_template('nick_changer_no_permission') . '";');
   }
   eval('print_output("' . fetch_template($shelltemplatename) . '");');
-} else if ($_REQUEST['do'] == 'dochance_username') {
+}
+
+if ($_REQUEST['do'] == 'dochance_username') {
   $vbulletin->input->clean_array_gpc('p', array('username' => TYPE_STR, "username_confirmation" => TYPE_UINT));
 
   if (!$vbulletin->GPC['username_confirmation']) {
@@ -129,9 +133,6 @@ if ($_REQUEST['do'] == 'checkavailability') {
     // TODO : Dar un mensaje mas amigable al usuario
     print_no_permission();
   }
-} else {
-  # Invalid action
-  $using_ajax ? exit : print_no_permission();
 }
 
 ?>

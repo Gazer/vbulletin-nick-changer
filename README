@@ -1,8 +1,20 @@
+Install
+========
+* Upload all the addon files (excluding the product XML file) to your vBulletin installation folder
+* Login into the AdminCP
+  - Goto to Plugins & Products -> Manage Products
+  - Click Add/Import Product at the bottom
+  - Select the product-nick_changer.xml file and click Import.
 
-Edit the USERCP_SHELL template and add :
+Post Install
+============
+
+After installing the product there is a required template edition.
+
+Open the USERCP_SHELL template and add :
 <tr>
 	<td class="$navclass[attachments]" nowrap="nowrap"><a class="smallfont" href="nick_changer.php?$session[sessionurl]">$vbphrase[nick_changer_change_username]</a></td>
 </tr>
 
-After :
+Before :
 <if condition="$show['siglink']">

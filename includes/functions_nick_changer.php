@@ -34,7 +34,7 @@ function nick_changer_can_change_username($userinfo)
 
   if ($vbulletin->options["nick_changer_on_off"] == 0) return false;
 
-  $timespan = TIMENOW - $vbulletin->options["nick_changer_days"] * 86400;
+  $timespan = TIMENOW - $vbulletin->options["nick_changer_days"] * DAYS_TO_SECONDS;
 
   if ($userinfo['nick_changer_last_change'] > $timespan) return false;
 

@@ -3,7 +3,7 @@
 <product productid="punch_o_matic" active="1">
 	<title>3DG - Nick Changer</title>
 	<description>Allow normal users change his username over a time period</description>
-	<version>0.1</version>
+	<version>0.2</version>
 	<url>http://foros.3dgames.com.ar/</url>
 	<versioncheckurl></versioncheckurl>
 	<dependencies>
@@ -30,6 +30,21 @@
       $vbulletin->db->query_write("DROP TABLE IF EXISTS " . TABLE_PREFIX . "nick_changer_usernames");
       $vbulletin->db->query_write("ALTER TABLE " . TABLE_PREFIX . "user DROP COLUMN `nick_changer_last_change`");
 
+      $db->show_errors();]]>
+      </uninstallcode>
+    </code>
+    <code version="0.2">
+      <installcode><![CDATA[$db->hide_errors();
+      $db->query_write("ALTER TABLE `". TABLE_PREFIX ."user` ADD `nick_changer_last_username` varchar( 100 )");
+
+      $changes = $db->query_read("SELECT userid, username FROM `".TABLE_PREFIX."nick_changer_usernames` ORDER BY id ASC");
+      while ($change = $db->fetch_array($changes)) {
+        $db->query_write("UPDATE `".TABLE_PREFIX."user` SET nick_changer_last_username='".$db->escape_string($change['username'])."' where userid=".$change['userid']);
+      }
+      $db->show_errors();]]>
+      </installcode>
+      <uninstallcode><![CDATA[$db->hide_errors();
+      $db->query_write("ALTER TABLE `". TABLE_PREFIX ."user` DROP COLUMN `nick_changer_last_username`");
       $db->show_errors();]]>
       </uninstallcode>
     </code>
@@ -132,9 +147,24 @@
   </templates>
   <plugins>
     <plugin active="1" executionorder="5">
+      <title><![CDATA[Show the previous username in postbit]]></title>
+      <hookname>postbit_display_complete</hookname>
+      <phpcode><![CDATA[
+        global $vbphrase, $vbulletin;
+        $seconds = $vbulletin->options['nick_changer_show_last_username']*86400;
+        if ($vbulletin->options['nick_changer_show_last_username'] > 0) {
+          if ((intval($this->post['nick_changer_last_change']) - TIMENOW + $seconds > 0) && !empty($this->post['nick_changer_last_username'])) {
+            $template_hook[postbit_userinfo_left]	.= construct_phrase($vbphrase['nick_changer_previous_username'], $this->post['nick_changer_last_username']);
+          }
+        }
+        ]]></phpcode>
+    </plugin>
+    
+    <plugin active="1" executionorder="5">
       <title><![CDATA[Set nick_changer_last_change as valid field to users]]></title>
       <hookname>userdata_start</hookname>
-      <phpcode><![CDATA[$this->validfields['nick_changer_last_change'] = array(TYPE_UINT, REQ_NO);]]></phpcode>
+      <phpcode><![CDATA[$this->validfields['nick_changer_last_change'] = array(TYPE_UINT, REQ_NO);
+        $this->validfields['nick_changer_last_username'] = array(TYPE_STR, REQ_NO);]]></phpcode>
     </plugin>
     <plugin active="1" executionorder="5">
       <title>Add navbit for User options panel</title>
@@ -226,10 +256,19 @@
 			<phrase name="setting_nick_changer_usernote_posterid_title" date="1194767284" username="" version="0.1">
 			  <![CDATA[User ID to use has poster in the Usernote]]>
 			</phrase>
+			<phrase name="setting_nick_changer_show_last_username_title" date="1194767284" username="" version="0.2">
+			  <![CDATA[Show Previous Username]]>
+			</phrase>
+			<phrase name="setting_nick_changer_show_last_username_desc" date="1194767284" username="" version="0.2">
+			  <![CDATA[Set the number of days to show the old username of the user in postbit. Set 0 to not show.]]>
+			</phrase>
 		</phrasetype>
 		<phrasetype name="GLOBAL" fieldname="global">
 			<phrase name="nick_changer_change_username" date="0" username="" version="0.1">
 			  <![CDATA[Change Username]]>
+			</phrase>
+			<phrase name="nick_changer_previous_username" date="0" username="" version="0.2">
+			  <![CDATA[(a.k.a. {1})]]>
 			</phrase>
 			<phrase name="nick_changer_username" date="0" username="" version="0.1">
 			  <![CDATA[New Username]]>
@@ -297,6 +336,10 @@
 				<defaultvalue>Nick Changed</defaultvalue>
 			</setting>
 			<setting varname="nick_changer_usernote_posterid" displayorder="50">
+				<datatype>free</datatype>
+				<defaultvalue>0</defaultvalue>
+			</setting>
+			<setting varname="nick_changer_show_last_username" displayorder="60">
 				<datatype>free</datatype>
 				<defaultvalue>0</defaultvalue>
 			</setting>

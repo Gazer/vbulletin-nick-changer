@@ -159,7 +159,6 @@
         }
         ]]></phpcode>
     </plugin>
-    
     <plugin active="1" executionorder="5">
       <title><![CDATA[Set nick_changer_last_change as valid field to users]]></title>
       <hookname>userdata_start</hookname>

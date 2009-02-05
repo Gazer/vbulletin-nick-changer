@@ -3,7 +3,7 @@
 <product productid="punch_o_matic" active="1">
 	<title>3DG - Nick Changer</title>
 	<description>Allow normal users change his username over a time period</description>
-	<version>0.2</version>
+	<version>0.3</version>
 	<url>http://foros.3dgames.com.ar/</url>
 	<versioncheckurl></versioncheckurl>
 	<dependencies>
@@ -159,6 +159,17 @@
         }
         ]]></phpcode>
     </plugin>
+		<plugin active="1" executionorder="5">
+			<title>Show the previous username in pm</title>
+			<hookname>private_showpm_start</hookname>
+			<phpcode><![CDATA[global $vbphrase, $vbulletin;
+        $seconds = $vbulletin->options['nick_changer_show_last_username']*86400;
+        if ($vbulletin->options['nick_changer_show_last_username'] > 0) {
+          if ((intval($pm['nick_changer_last_change']) - TIMENOW + $seconds > 0) && !empty($pm['nick_changer_last_username'])) {
+            $template_hook[postbit_userinfo_left]	.= construct_phrase($vbphrase['nick_changer_previous_username'], $pm['nick_changer_last_username']);
+          }
+        }]]></phpcode>
+		</plugin>
     <plugin active="1" executionorder="5">
       <title><![CDATA[Set nick_changer_last_change as valid field to users]]></title>
       <hookname>userdata_start</hookname>

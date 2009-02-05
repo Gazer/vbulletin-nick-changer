@@ -3,7 +3,7 @@
 <product productid="punch_o_matic" active="1">
 	<title>3DG - Nick Changer</title>
 	<description>Allow normal users change his username over a time period</description>
-	<version>0.3</version>
+	<version>0.4</version>
 	<url>http://foros.3dgames.com.ar/</url>
 	<versioncheckurl></versioncheckurl>
 	<dependencies>
@@ -45,6 +45,19 @@
       </installcode>
       <uninstallcode><![CDATA[$db->hide_errors();
       $db->query_write("ALTER TABLE `". TABLE_PREFIX ."user` DROP COLUMN `nick_changer_last_username`");
+      $db->show_errors();]]>
+      </uninstallcode>
+    </code>
+    <code version="0.4">
+      <installcode><![CDATA[$db->hide_errors();
+      // Update lastusername due a bug in version 0.3
+      $changes = $db->query_read("SELECT userid, username FROM `".TABLE_PREFIX."nick_changer_usernames` ORDER BY id ASC");
+      while ($change = $db->fetch_array($changes)) {
+        $db->query_write("UPDATE `".TABLE_PREFIX."user` SET nick_changer_last_username='".$db->escape_string($change['username'])."' where userid=".$change['userid']);
+      }
+      $db->show_errors();]]>
+      </installcode>
+      <uninstallcode><![CDATA[$db->hide_errors();
       $db->show_errors();]]>
       </uninstallcode>
     </code>

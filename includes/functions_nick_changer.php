@@ -56,6 +56,7 @@ function nick_changer_change_username($userinfo, $username)
 	  // If this is the first post, we close the thread as "Moderated"
 	  $dataman->set('nick_changer_last_change', TIMENOW);
 	  $dataman->set('username', $username);
+	  $dataman->set('nick_changer_last_username', $old_username);
   	$dataman->pre_save();
 	  
     if (!empty($dataman->errors))
